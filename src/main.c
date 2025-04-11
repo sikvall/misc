@@ -14,7 +14,8 @@ void real_print(real_t *r) {
 }
   
 
-int64_t real_gcd(int64_t a, int64_t b) {
+int64_t real_gcd(int64_t a, int64_t b)
+{
   a = abs(a);
   b = abs(b);
   while (b != 0) {
@@ -26,8 +27,8 @@ int64_t real_gcd(int64_t a, int64_t b) {
 }
 
 
-void real_simplify(real_t *r) {
-
+void real_simplify(real_t *r)
+{
   // Throw error and exit if denominator is 0
   if (r->b == 0) {
     fprintf(stderr,
@@ -46,9 +47,20 @@ void real_simplify(real_t *r) {
     r->b = -r->b;
   }
 
-  real_print(r);
+  int64_t gcd = 0;
+
+  gcd = real_gcd(r->a, r->b);
+  if(gcd) {
+    r->a /= gcd;
+    r->b /= gcd;
+  }
+
+  return;
   
-  
+
+  //  real_print(r);
+
+  return ;
 }
 
 
@@ -92,18 +104,85 @@ void double_to_real(double d, real_t *r)
 
 
 
+void real_mul(real_t *f1, real_t *f2, real_t *res)
+{
+  res->a = f1->a * f2->a;
+  res->b = f1->b * f2->b;
+  real_simplify(res);
+
+  return;
+}
+
+
+void real_div(real_t *f1, real_t *f2, real_t *res)
+{
+  res->a = f1->a * f2->b;
+  res->b = f1->b * f2->a;
+  real_simplify(res);
+
+  return;
+}
+
+
+void real_add(real_t *t1, real_t *t2, real_t *res)
+{
+  res->a = (t1->a * t2->b) + (t2->a * t1->b);
+  res->b = t1->b * t2->b;
+  real_simplify(res);
+
+  return;
+}
+
+
+void real_sub(real_t *f1, real_t *f2, real_t *res)
+{
+
+  printf("%ld/%ld - %ld/%ld\n", f1->a, f1->b, f2->a, f2->b);
+  res->a = (f1->a*f2->b) - (f2->a*f1->b);
+  res->b = f1->b * f2->b;
+  //  real_simplify(res);
   
+  return;
+}
 
 
 int main(int argc, void *argv[]) {
-  real_t r;
-  double d;
+  real_t f1, f2, res;
+
+  f1.a = -12;
+  f1.b = -1;
+
+  f2.a = 12;
+  f2.b = 4;
+
+  printf("Rå Input:\n");
+  real_print(&f1);
+  real_print(&f2);
+
+  real_simplify(&f1);
+  real_simplify(&f2);
+  
+  printf("Input:\n");
+  real_print(&f1);
+  real_print(&f2);
 
 
-  d = -630.8;
+  printf("Division:\n");
+  real_div(&f1, &f2, &res);
+  real_print(&res);
 
-  double_to_real(d, &r);
-  real_simplify(&r);
+  printf("Multiplikation:\n");
+  real_mul(&f1, &f2, &res);
+  real_print(&res);
 
+  printf("Addition:\n");
+  real_add(&f1, &f2, &res);
+  real_print(&res);
+
+
+  printf("Subtraktion:\n");
+  real_sub(&f1, &f2, &res);
+  real_print(&res);
+  
   return 0;
 }
