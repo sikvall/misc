@@ -99,9 +99,7 @@ void double_to_real(double d, real_t *r)
   }
 
   real_print(r);
- 
 }
-
 
 
 void real_mul(real_t *f1, real_t *f2, real_t *res)
@@ -136,7 +134,6 @@ void real_add(real_t *t1, real_t *t2, real_t *res)
 
 void real_sub(real_t *f1, real_t *f2, real_t *res)
 {
-
   printf("%ld/%ld - %ld/%ld\n", f1->a, f1->b, f2->a, f2->b);
   res->a = (f1->a*f2->b) - (f2->a*f1->b);
   res->b = f1->b * f2->b;
@@ -149,11 +146,11 @@ void real_sub(real_t *f1, real_t *f2, real_t *res)
 int main(int argc, void *argv[]) {
   real_t f1, f2, res;
 
-  f1.a = -12;
-  f1.b = -1;
+  f1.a = 120;
+  f1.b = 100;
 
-  f2.a = 12;
-  f2.b = 4;
+  f2.a = 120;
+  f2.b = 100;
 
   printf("Rå Input:\n");
   real_print(&f1);
@@ -165,7 +162,6 @@ int main(int argc, void *argv[]) {
   printf("Input:\n");
   real_print(&f1);
   real_print(&f2);
-
 
   printf("Division:\n");
   real_div(&f1, &f2, &res);
@@ -179,10 +175,11 @@ int main(int argc, void *argv[]) {
   real_add(&f1, &f2, &res);
   real_print(&res);
 
-
   printf("Subtraktion:\n");
   real_sub(&f1, &f2, &res);
   real_print(&res);
   
   return 0;
 }
+
+
