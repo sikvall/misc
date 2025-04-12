@@ -5,11 +5,15 @@
 #include "rational.h"
 
 
-// This is the struct that hold a rational number
-typedef struct {
-	int64_t a; // numerator
-	int64_t b; // denominator
-} rational_t;
+// Create a rational number easily.
+void rational_create(int64_t n, int64_t d, rational_t *res)
+{
+	res->a = n;
+	res->b = d;
+	rational_simplify(res);
+
+	return;
+}
 
 
 // This function prints a rational to the stdout including the
@@ -17,7 +21,10 @@ typedef struct {
 // purposes of course.
 void rational_print(rational_t *r)
 {
-	printf("%12ld / %-12ld = %30.15f\n", r->a, r->b,  (double)r->a / (double)r->b);
+	printf("%12ld / %-12ld = %12.4f\n",
+	       r->a, r->b,  (double)r->a / (double)r->b);
+
+	return;
 }
 
 
@@ -50,20 +57,18 @@ void rational_simplify(rational_t *r)
 		exit(20);
 	}
 	
-	// We need to adjust the sign so it is strict. For a negative rational
-	// only the numerator should be negative. If both the nominator and
-	// denominator are neg then that is a positive rational. We do this by
-	// simply looking at the denominator sign. If this is negative then we
-	// flip the sign on both nominator and denominator. This works.
-	
+	// Adjust the sign bit to the numerator only. if N and D are
+	// negative, the rational is positive. If one of the D or N is
+	// negative the rational is negative. To fix this we check the
+	// sign bit of the D and if it is negative then we flip the
+	// sign on both the N and D and this will be correct.
 	if (r->b < 0) {
 		r->a = -r->a;
 		r->b = -r->b;
 	}
 	
-	// Find the greatest comon denominator GCD and divide both N and D
-	// with this.
-	
+	// Find the greatest comon denominator GCD and divide both N
+	// and D with this.
 	int64_t gcd = rational_gcd(r->a, r->b);
 	if(gcd) {
 		r->a /= gcd;
@@ -233,49 +238,12 @@ void rational_pi(rational_t *pi)
 int main(int argc, void *argv[]) {
 	rational_t f1, f2, res;
 	
-	f1.a = 436;
-	f1.b = 100;
+	rational_create(436, 100, &f1); rational_print(&f1);
+	rational_create(-436, 100, &f2); rational_print(&f2);
 
-	f2.a = 678835;
-	f2.b = 100;
-	
-	//rational_pi(&f2);
-	printf("Rå Input:\n");
-	rational_print(&f1);
-	rational_print(&f2);
-	
-	rational_simplify(&f1);
-	rational_simplify(&f2);
-	
-	printf("Input:\n");
-	rational_print(&f1);
-	rational_print(&f2);
-	
-	printf("Division:\n");
-	rational_div(&f1, &f2, &res);
-	rational_print(&res);
-	
-	printf("Multiplikation:\n");
-	rational_mul(&f1, &f2, &res);
-	rational_print(&res);
-	
-	printf("Addition:\n");
 	rational_add(&f1, &f2, &res);
 	rational_print(&res);
-	
-	printf("Subtraktion:\n");
-	rational_sub(&f1, &f2, &res);
-	rational_print(&res);
-	
-	printf("Kvadratroten:\n");
-	rational_sqrt(&f1, &res);
-	rational_print(&res);
-	
-	printf("Square root of some numbers:\n"
-	       "3 %ld  4 %ld  10 %ld  16 %ld  22 %ld  100 %ld\n",
-	       int64sqrt(3), int64sqrt(4), int64sqrt(10), int64sqrt(16),
-	       int64sqrt(22), int64sqrt(100));
-	
+
 	return 0;
 }
 
