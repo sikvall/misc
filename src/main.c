@@ -10,7 +10,7 @@ typedef struct {
 } real_t;
 
 void real_print(real_t *r) {
-  printf("%12ld / %-12ld = %18f\n", r->a, r->b,  (double)r->a / (double)r->b);
+  printf("%12ld / %-12ld = %30.15f\n", r->a, r->b,  (double)r->a / (double)r->b);
 }
   
 
@@ -56,11 +56,6 @@ void real_simplify(real_t *r)
   }
 
   return;
-  
-
-  //  real_print(r);
-
-  return ;
 }
 
 
@@ -134,7 +129,6 @@ void real_add(real_t *t1, real_t *t2, real_t *res)
 
 void real_sub(real_t *f1, real_t *f2, real_t *res)
 {
-  printf("%ld/%ld - %ld/%ld\n", f1->a, f1->b, f2->a, f2->b);
   res->a = (f1->a*f2->b) - (f2->a*f1->b);
   res->b = f1->b * f2->b;
   //  real_simplify(res);
@@ -143,15 +137,79 @@ void real_sub(real_t *f1, real_t *f2, real_t *res)
 }
 
 
+int64_t int64sqrt(int64_t i)
+{
+  int64_t left, mid, right, result;
+  
+  // Can't do negative (yet)
+  if (i<0) {
+    printf("ERR: Can not calculate the square root of a negative.\n");
+    exit(20);
+  }
+
+  // If input is 0 or 1 the root is by definition the same
+  if( i == 0 ||
+      i == 1) return i;
+
+  // Prime the calculation
+  left = 1;   right = i;   result = 0;
+  while (left <= right) {
+    mid = left + (right - left) / 2;
+    if (mid <= i / mid) {
+      result = mid;
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  return result;
+}
+  
+
+#define REAL_ANTE (10000000L)
+
+void real_up_the_ante(real_t *p)
+{
+  // Determine exactly how much
+  if(p->a < REAL_ANTE) {
+    p->a *= REAL_ANTE;
+    p->b *= REAL_ANTE;
+  }
+
+  if(p->b < REAL_ANTE) {
+    p->a *= REAL_ANTE;
+    p->b *= REAL_ANTE;
+  }
+}
+
+  
+
+void real_sqrt(real_t *f, real_t *r)
+{
+  real_up_the_ante(f);
+  r->a = int64sqrt(f->a);
+  r->b = int64sqrt(f->b);
+  real_simplify(r);
+
+  return ;
+}
+
+
+void real_pi(real_t *pi)
+{
+  pi->a = 5419351;
+  pi->b = 1725033;
+}
+
+
 int main(int argc, void *argv[]) {
   real_t f1, f2, res;
 
-  f1.a = 120;
+  f1.a = 436;
   f1.b = 100;
 
-  f2.a = 120;
-  f2.b = 100;
-
+  real_pi(&f2);
+  
   printf("Rå Input:\n");
   real_print(&f1);
   real_print(&f2);
@@ -178,6 +236,15 @@ int main(int argc, void *argv[]) {
   printf("Subtraktion:\n");
   real_sub(&f1, &f2, &res);
   real_print(&res);
+
+  printf("Kvadratroten:\n");
+  real_sqrt(&f1, &res);
+  real_print(&res);
+
+  printf("Square root of some numbers:\n"
+	 "3 %ld  4 %ld  10 %ld  16 %ld  22 %ld  100 %ld\n",
+	 int64sqrt(3), int64sqrt(4), int64sqrt(10), int64sqrt(16),
+	 int64sqrt(22), int64sqrt(100));
   
   return 0;
 }
