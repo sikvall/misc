@@ -4,12 +4,17 @@
 #include <math.h>
 #include "rational.h"
 
+
 /* This is the struct that hold a real number */
 typedef struct {
 	int64_t a; // numerator
 	int64_t b; // denominator
 } real_t;
 
+
+// This function prints a rational to the stdout including the
+// corresponding double float value. Mostly used for debugging
+// purposes of course.
 void rational_print(rational_t *r)
 {
 	printf("%12ld / %-12ld = %30.15f\n", r->a, r->b,  (double)r->a / (double)r->b);
@@ -31,12 +36,11 @@ int64_t rational_gcd(int64_t a, int64_t b)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
 // This function finds the greatest common denominator betweet the numerator
 // and denominator and then it divides both with the GCD which simplifies the
-// rational It returns nothing and it takes one argument which is a pointer to a
-// rational_t object.
- void rational_simplify(rational_t *r)
+// rational It returns nothing and it takes one argument which is a pointer to
+// a rational_t object.
+void rational_simplify(rational_t *r)
 {
 	// Throw error and exit if denominator is 0
 	if (r->b == 0) {
@@ -46,20 +50,19 @@ int64_t rational_gcd(int64_t a, int64_t b)
 		exit(20);
 	}
 	
-	// We need to adjust the sign so it is strict. For a negative
-	// rational only the numerator should be negative. If both the
-	// nominator and denominator are neg then that is a positive
-	// rational. We do this by simply looking at the denominator
-	// sign. If this is negative then we flip the sign on both
-	// nominator and denominator. This works.
+	// We need to adjust the sign so it is strict. For a negative rational
+	// only the numerator should be negative. If both the nominator and
+	// denominator are neg then that is a positive rational. We do this by
+	// simply looking at the denominator sign. If this is negative then we
+	// flip the sign on both nominator and denominator. This works.
 	
 	if (r->b < 0) {
 		r->a = -r->a;
 		r->b = -r->b;
 	}
-
-	// Find the greatest comon denominator GCD and divide both N
-	// and D with this.
+	
+	// Find the greatest comon denominator GCD and divide both N and D
+	// with this.
 	
 	int64_t gcd = rational_gcd(r->a, r->b);
 	if(gcd) {
@@ -70,7 +73,11 @@ int64_t rational_gcd(int64_t a, int64_t b)
 	return ;
 }
 
-
+// This converts a double to a rational. It's not the best way of doing things
+// but it kind of works. So basically to convert a number like 6543.44882 we
+// take the integer part and put it in a rational like 6543/1 and then we add
+// the decimals one by one so we get 65434/10, then 654344882/100000 and when
+// we are done with that we simplify if possible.
 void double_to_rational(double d, rational_t *r)
 {
 	int sign = 1;
@@ -78,7 +85,6 @@ void double_to_rational(double d, rational_t *r)
 	int64_t integer;
 	int64_t figure;
 	int iter;
-	int max_iter = 12;
 	
 	// Initialize structure to zero
 	r->a = 0;
@@ -91,12 +97,11 @@ void double_to_rational(double d, rational_t *r)
 	fraction = fabs(d - abs(r->a));
 	
 	
-	/* While the fraction is significant multiply by 10, take the
-           integer part, multiply the nominator by ten, add the
-           integer part to that and multiply the denominator also by
-           ten, then remove the integer part and do the next round. */
-	
-	while(iter < max_iter) {
+	// While the fraction is significant multiply by 10, take the integer
+	// part, multiply the nominator by ten, add the integer part to that
+	// and multiply the denominator also by ten, then remove the integer
+	// part and do the next round.
+	while(iter < RATIONAL_DOUBLE_MAX_ITER) {
 		fraction *= 10;
 		r->a *= 10;
 		r->a  += (int64_t)fraction;
@@ -123,7 +128,8 @@ void rational_mul(rational_t *f1, rational_t *f2, rational_t *res)
 
 // Divides two rationals, f1 and f2 and places the result in res which is then
 // simplified.
-void rational_div(rational_t *f1, rational_t *f2, rational_t *res) {
+void rational_div(rational_t *f1, rational_t *f2, rational_t *res)
+{
 	res->a = f1->a * f2->b;
 	res->b = f1->b * f2->a;
 	rational_simplify(res);
@@ -202,7 +208,8 @@ void rational_up_the_ante(rational_t *p)
 }
 
 
-
+// Take the rational in f, return a reasonable approximation of the square
+// root of it in r.
 void rational_sqrt(rational_t *f, rational_t *r)
 {
 	rational_up_the_ante(f);
@@ -214,6 +221,7 @@ void rational_sqrt(rational_t *f, rational_t *r)
 }
 
 
+// Enter a fraction that gives a reasonable value of pi
 void rational_pi(rational_t *pi)
 {
 	pi->a = 5419351;
@@ -221,6 +229,9 @@ void rational_pi(rational_t *pi)
 }
 
 
+
+
+// Just test code so far
 int main(int argc, void *argv[]) {
 	rational_t f1, f2, res;
 	
