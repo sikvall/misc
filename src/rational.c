@@ -10,7 +10,7 @@ void rational_create(int64_t n, int64_t d, rational_t *res)
 {
 	res->a = n;
 	res->b = d;
-	rational_simplify(res);
+	rational_simplify(res);    
 
 	return;
 }
@@ -65,7 +65,7 @@ void rational_simplify(rational_t *r)
 	if (r->b < 0) {
 		r->a = -r->a;
 		r->b = -r->b;
-	}
+	   }
 	
 	// Find the greatest comon denominator GCD and divide both N
 	// and D with this.
