@@ -1,6 +1,6 @@
 // Defining of magical numbers
 #define RATIONAL_ANTE (10000000L)
-#define RATIONAL_MAX_ITER (20)
+#define RATIONAL_DOUBLE_MAX_ITER (20)
 
 // The main struct for a rational
 typedef struct {
