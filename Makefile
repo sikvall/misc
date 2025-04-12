@@ -1,2 +1,2 @@
 all:
-	gcc -o main src/main.c
+	gcc -o rational src/rational.c

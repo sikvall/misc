@@ -1,0 +1,271 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <math.h>
+#include "rational.h"
+
+/* This is the struct that hold a real number */
+typedef struct {
+	int64_t a; // numerator
+	int64_t b; // denominator
+} real_t;
+
+void rational_print(rational_t *r)
+{
+	printf("%12ld / %-12ld = %30.15f\n", r->a, r->b,  (double)r->a / (double)r->b);
+}
+
+
+// This function finds the greatest common denominator of a rational and returns
+// this as an int64_t, this is used to simplify a rational.
+int64_t rational_gcd(int64_t a, int64_t b)
+{
+	a = abs(a);
+	b = abs(b);
+	while (b != 0) {
+		int64_t tmp = b;
+		b = a % b;
+		a = tmp;
+	}
+	return a;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// This function finds the greatest common denominator betweet the numerator
+// and denominator and then it divides both with the GCD which simplifies the
+// rational It returns nothing and it takes one argument which is a pointer to a
+// rational_t object.
+ void rational_simplify(rational_t *r)
+{
+	// Throw error and exit if denominator is 0
+	if (r->b == 0) {
+		fprintf(stderr,
+			"ERR: Denominator connot be zero.\n"
+			"     Division by 0 error - exiting.\n");
+		exit(20);
+	}
+	
+	// We need to adjust the sign so it is strict. For a negative
+	// rational only the numerator should be negative. If both the
+	// nominator and denominator are neg then that is a positive
+	// rational. We do this by simply looking at the denominator
+	// sign. If this is negative then we flip the sign on both
+	// nominator and denominator. This works.
+	
+	if (r->b < 0) {
+		r->a = -r->a;
+		r->b = -r->b;
+	}
+
+	// Find the greatest comon denominator GCD and divide both N
+	// and D with this.
+	
+	int64_t gcd = rational_gcd(r->a, r->b);
+	if(gcd) {
+		r->a /= gcd;
+		r->b /= gcd;
+	}
+	
+	return ;
+}
+
+
+void double_to_rational(double d, rational_t *r)
+{
+	int sign = 1;
+	double fraction;
+	int64_t integer;
+	int64_t figure;
+	int iter;
+	int max_iter = 12;
+	
+	// Initialize structure to zero
+	r->a = 0;
+	r->b = 1;
+	
+	// Nominator is the integer part
+	r->a = (int64_t)d;
+	
+	// Fraction is what remains now
+	fraction = fabs(d - abs(r->a));
+	
+	
+	/* While the fraction is significant multiply by 10, take the
+           integer part, multiply the nominator by ten, add the
+           integer part to that and multiply the denominator also by
+           ten, then remove the integer part and do the next round. */
+	
+	while(iter < max_iter) {
+		fraction *= 10;
+		r->a *= 10;
+		r->a  += (int64_t)fraction;
+		fraction  = fraction - (int64_t)fraction;
+		r->b *= 10;
+		printf("%f %ld / %ld \n", fraction, r->a, r->b);
+		iter++;
+	}
+	
+	rational_print(r);
+}
+
+
+// Multiplies two rationals, f1 and f2 and places the result in res which is
+// then also simplified before returning.
+void rational_mul(rational_t *f1, rational_t *f2, rational_t *res)
+{
+	res->a = f1->a * f2->a;
+	res->b = f1->b * f2->b;
+	rational_simplify(res);
+	
+	return;
+}
+
+// Divides two rationals, f1 and f2 and places the result in res which is then
+// simplified.
+void rational_div(rational_t *f1, rational_t *f2, rational_t *res) {
+	res->a = f1->a * f2->b;
+	res->b = f1->b * f2->a;
+	rational_simplify(res);
+	
+	return;
+}
+
+// Adds two rationals t1 and t2 and the result is then placed in res which is
+// also simplified.
+void rational_add(rational_t *t1, rational_t *t2, rational_t *res)
+{
+	res->a = (t1->a * t2->b) + (t2->a * t1->b);
+	res->b = t1->b * t2->b;
+	rational_simplify(res);
+	
+	return;
+}
+
+// Subtracts two radionals such as res = f1 - f2 which is then also simplified
+// before returning.
+void rational_sub(rational_t *f1, rational_t *f2, rational_t *res)
+{
+	res->a = (f1->a*f2->b) - (f2->a*f1->b);
+	res->b = f1->b * f2->b;
+	//  rational_simplify(res);
+	
+	return;
+}
+
+// Takes the square root of the rational i which is then simplified. The
+// process first makes sure the rational has enough figures to get good
+// precision, then it will find the closest possible integer to both N and D
+// and when this is done it will simplify the rational and return.
+int64_t int64sqrt(int64_t i)
+{
+	int64_t left, mid, right, result;
+	
+	// Can't do negative (yet)
+	if (i<0) {
+		printf("ERR: Can not calculate the square root of a negative.\n");
+		exit(20);
+	}
+	
+	// If input is 0 or 1 the root is by definition the same
+	if( i == 0 ||
+	    i == 1) return i;
+	
+	// Prime the calculation
+	left = 1;   right = i;   result = 0;
+	while (left <= right) {
+		mid = left + (right - left) / 2;
+		if (mid <= i / mid) {
+			result = mid;
+			left = mid + 1;
+		} else {
+			right = mid - 1;
+		}
+	}
+	return result;
+}
+
+
+// Makes sure both the N and D are of sufficient size before certain
+// operations are made to preserve precision.
+void rational_up_the_ante(rational_t *p)
+{
+	if(p->a < RATIONAL_ANTE) {
+		p->a *= RATIONAL_ANTE;
+		p->b *= RATIONAL_ANTE;
+	}
+	
+	if(p->b < RATIONAL_ANTE) {
+		p->a *= RATIONAL_ANTE;
+		p->b *= RATIONAL_ANTE;
+	}
+}
+
+
+
+void rational_sqrt(rational_t *f, rational_t *r)
+{
+	rational_up_the_ante(f);
+	r->a = int64sqrt(f->a);
+	r->b = int64sqrt(f->b);
+	rational_simplify(r);
+	
+	return ;
+}
+
+
+void rational_pi(rational_t *pi)
+{
+	pi->a = 5419351;
+	pi->b = 1725033;
+}
+
+
+int main(int argc, void *argv[]) {
+	rational_t f1, f2, res;
+	
+	f1.a = 436;
+	f1.b = 100;
+	
+	rational_pi(&f2);
+	
+	printf("Rå Input:\n");
+	rational_print(&f1);
+	rational_print(&f2);
+	
+	rational_simplify(&f1);
+	rational_simplify(&f2);
+	
+	printf("Input:\n");
+	rational_print(&f1);
+	rational_print(&f2);
+	
+	printf("Division:\n");
+	rational_div(&f1, &f2, &res);
+	rational_print(&res);
+	
+	printf("Multiplikation:\n");
+	rational_mul(&f1, &f2, &res);
+	rational_print(&res);
+	
+	printf("Addition:\n");
+	rational_add(&f1, &f2, &res);
+	rational_print(&res);
+	
+	printf("Subtraktion:\n");
+	rational_sub(&f1, &f2, &res);
+	rational_print(&res);
+	
+	printf("Kvadratroten:\n");
+	rational_sqrt(&f1, &res);
+	rational_print(&res);
+	
+	printf("Square root of some numbers:\n"
+	       "3 %ld  4 %ld  10 %ld  16 %ld  22 %ld  100 %ld\n",
+	       int64sqrt(3), int64sqrt(4), int64sqrt(10), int64sqrt(16),
+	       int64sqrt(22), int64sqrt(100));
+	
+	return 0;
+}
+
+
