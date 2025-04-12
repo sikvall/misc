@@ -5,11 +5,11 @@
 #include "rational.h"
 
 
-/* This is the struct that hold a real number */
+// This is the struct that hold a rational number
 typedef struct {
 	int64_t a; // numerator
 	int64_t b; // denominator
-} real_t;
+} rational_t;
 
 
 // This function prints a rational to the stdout including the
@@ -104,7 +104,7 @@ void double_to_rational(double d, rational_t *r)
 	while(iter < RATIONAL_DOUBLE_MAX_ITER) {
 		fraction *= 10;
 		r->a *= 10;
-		r->a  += (int64_t)fraction;
+		r->a += (int64_t)fraction;
 		fraction  = fraction - (int64_t)fraction;
 		r->b *= 10;
 		printf("%f %ld / %ld \n", fraction, r->a, r->b);
@@ -229,17 +229,17 @@ void rational_pi(rational_t *pi)
 }
 
 
-
-
 // Just test code so far
 int main(int argc, void *argv[]) {
 	rational_t f1, f2, res;
 	
 	f1.a = 436;
 	f1.b = 100;
+
+	f2.a = 678835;
+	f2.b = 100;
 	
-	rational_pi(&f2);
-	
+	//rational_pi(&f2);
 	printf("Rå Input:\n");
 	rational_print(&f1);
 	rational_print(&f2);
